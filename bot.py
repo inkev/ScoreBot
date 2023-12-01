@@ -1,36 +1,27 @@
 import discord
-import responses
+from discord.ext import commands
+import cogs.utils.checks as checks
 import environment
 
-async def send_message(message, user_message, is_private):
-    try:
-        response = responses.handle_responses(user_message)
-        await message.author.send(response) if is_private else await message.channel.send(response)
-    except Exception as e:
-        print(e)
+startup_extensions = ["cogs.valo"]
 
-def run_discord_bot():
-    client = discord.Client(intents=discord.Intents.default())
+description = "fuck you"
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!", description = description, intents=intents)
 
-    @client.event
-    async def on_ready():
-        print(f'{client.user} is now running')
+@bot.event
+async def on_ready():
+    print(f"Logged in as \n{bot.user}\n{bot.user.id}")
+    
+    for extension in startup_extensions:
+        try:
+            await bot.load_extension(extension)
+            print(f"Loaded {extension}")
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            print('Failed to load extension {}\n{}'.format(extension, exc))
 
-    @client.event
-    async def on_message(message):
-        if message.author == client.user:
-            return
+    await bot.tree.sync()
+    print("Synced slash commands for all users.")
 
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
-
-        print(f"{username} said: '{user_message}' ({channel})")
-        
-        if user_message[0] == '?':
-            user_message = user_message[1:]
-            await send_message(message, user_message, is_private = True)
-        else:
-            await send_message(message, user_message, is_private = False)
-
-    client.run(environment.TOKEN)
+bot.run(environment.TOKEN)
