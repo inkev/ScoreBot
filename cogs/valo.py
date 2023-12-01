@@ -2,20 +2,20 @@ from collections import namedtuple
 import discord
 from discord.ext import commands
 import valo_api
+import environment
 
-RiotId = namedtuple("RiotId", ("name", "tag"))
-HISTORY_VERSION = "v1"
+RiotId = namedtuple("RiotId", ("name", "tag", "PUUID"))
+HISTORY_VERSION = "v3"
 REGION = "na"
 
-player_dic = {
-    "inkev": RiotId("inkev", "NA1"),
-    "Visate": RiotId("Visate", "OWO")
-}
+player_dic = environment.PLAYER_DIC
 
 
 class Valo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    
+    valo_api.set_api_key(environment.VALOAPIKEY)
 
     @commands.hybrid_command()
     async def match(self, ctx, name: str):
@@ -23,17 +23,26 @@ class Valo(commands.Cog):
         
         try:
             history = await valo_api.endpoints.get_match_history_by_name_async(HISTORY_VERSION, REGION, player.name, player.tag)
-            await ctx.send(history.players.red[0].name)
+            team = check_team(player.name, history[0].players)
+            await ctx.send(team)
+
         except Exception as e:
             await ctx.send("no match history you fucker")
             print(e)
+        
+    def check_team(name: str, players):
+        for p in players.red:
+            if name == p.name:
+                return "red"
+        return "blue"
+
+
 
     @commands.hybrid_command()
     async def player(self, ctx, name: str):
-        player = player_dic[name]
-
-        try:
-            account = await valo_api.endpoints.get_account_details_by_name_v1_async("v1", player.name, player.tag, True)
+        try:   
+            player = player_dic[name]
+            account = await valo_api.endpoints.get_account_details_by_name_async("v1", player.name, player.tag, True)
             await ctx.send(account.puuid)
         except Exception as e:
             await ctx.send("Can't find no bitch")
