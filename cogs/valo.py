@@ -18,25 +18,47 @@ class Valo(commands.Cog):
     valo_api.set_api_key(environment.VALOAPIKEY)
 
     @commands.hybrid_command()
-    async def match(self, ctx, name: str):
+    async def drink(self, ctx, name: str):
         player = player_dic[name]
         
         try:
             history = await valo_api.endpoints.get_match_history_by_name_async(HISTORY_VERSION, REGION, player.name, player.tag)
-            team = check_team(player.name, history[0].players)
-            await ctx.send(team)
+            team = self.check_team(player.name, history[0].players)
+            drinks = self.calc_drinks(team, history)
+            formatted = "Your drink calculations are: \n" + drinks
+            await ctx.send(formatted)
 
         except Exception as e:
             await ctx.send("no match history you fucker")
             print(e)
         
-    def check_team(name: str, players):
+    def check_team(self, name: str, players):
         for p in players.red:
             if name == p.name:
                 return "red"
         return "blue"
+    
+    def calc_drinks(self, team, history):
+        drinkString = ""
+        drinks = 0
+        rounds = history[0].rounds
+        rnum = 0
+        for r in rounds:
+            rnum += 1
+            for p_stats in r.player_stats:
+                for kills in p_stats.kill_events:
+                    if kills.damage_weapon_name is None and kills.killer_display_name != kills.victim_display_name:
+                        drinkString += "{} got knifed by {} in round {}, that's a drink\n".format(kills.victim_display_name, kills.killer_display_name, rnum)
+                        print(drinkString)
+                        drinks += 1
 
+        if not history[0].teams.to_dict()[team].has_won:
+            drinkString += "You Lost +1\n"
+            drinks += 1
+            
 
+        drinkString += "Drink Total = {}".format(drinks)
+        return drinkString
 
     @commands.hybrid_command()
     async def player(self, ctx, name: str):
