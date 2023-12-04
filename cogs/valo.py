@@ -4,7 +4,6 @@ from discord.ext import commands
 import valo_api
 import environment
 
-RiotId = namedtuple("RiotId", ("name", "tag", "PUUID"))
 HISTORY_VERSION = "v3"
 REGION = "na"
 
@@ -25,7 +24,8 @@ class Valo(commands.Cog):
             history = await valo_api.endpoints.get_match_history_by_name_async(HISTORY_VERSION, REGION, player.name, player.tag)
             team = self.check_team(player.name, history[0].players)
             drinks = self.calc_drinks(team, history)
-            formatted = "Your drink calculations are: \n" + drinks
+            formatted = f"Your drink calculations are: \n{drinks}"
+            print(formatted)
             await ctx.send(formatted)
 
         except Exception as e:
@@ -48,8 +48,7 @@ class Valo(commands.Cog):
             for p_stats in r.player_stats:
                 for kills in p_stats.kill_events:
                     if kills.damage_weapon_name is None and kills.killer_display_name != kills.victim_display_name:
-                        drinkString += "{} got knifed by {} in round {}, that's a drink\n".format(kills.victim_display_name, kills.killer_display_name, rnum)
-                        print(drinkString)
+                        drinkString += "{} knifed {} in round {}, that's a drink\n".format(kills.killer_display_name, kills.victim_display_name, rnum)
                         drinks += 1
 
         if not history[0].teams.to_dict()[team].has_won:
