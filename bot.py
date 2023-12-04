@@ -7,7 +7,47 @@ startup_extensions = ["cogs.valo"]
 
 description = "fuck you"
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", description = description, intents=intents)
+bot = commands.Bot(command_prefix="!", description = description, intents=intents, case_insensitive = True)
+
+@bot.hybrid_command(hidden=True)
+@checks.is_owner()
+async def load(ctx, extension_name: str):
+	# Loads an extension.
+	try:
+		await bot.load_extension("cogs.{}".format(extension_name))
+	except (AttributeError, ImportError) as e:
+		await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+		return
+	await ctx.send("{} loaded.".format(extension_name))
+
+
+@bot.hybrid_command(hidden=True)
+@checks.is_owner()
+async def unload(ctx, extension_name: str):
+	# Unloads an extension.
+	await bot.unload_extension("cogs.{}".format(extension_name))
+	await ctx.send("{} unloaded.".format(extension_name))
+
+
+@bot.hybrid_command(hidden=True)
+@checks.is_owner()
+async def reload(ctx, extension_name:str):
+	# Reloads an extension
+	await bot.unload_extension("cogs.{}".format(extension_name))
+	await ctx.send("{} unloaded.".format(extension_name))
+	try:
+		await bot.load_extension("cogs.{}".format(extension_name))
+	except (AttributeError, ImportError) as e:
+		await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+		return
+	await ctx.send("{} loaded.".format(extension_name))
+
+
+@bot.hybrid_command(hidden=True)
+@checks.is_owner()
+async def synctree(ctx):
+	await bot.tree.sync()
+	await ctx.send("Command tree synced.")
 
 @bot.event
 async def on_ready():
