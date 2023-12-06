@@ -1,6 +1,6 @@
 import pytest
 import cogs.valo as valo
-import cogs.valo_match_history as test_value
+import test_assets.valo_match_history as test_value
 
 
 def test_check_team():
