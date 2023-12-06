@@ -3,9 +3,9 @@ from discord.ext import commands
 import cogs.utils.checks as checks
 import environment
 
-startup_extensions = ["cogs.valo"]
+startup_extensions = ["cogs.valo", "cogs.cs2"]
 
-description = "fuck you"
+description = "Hello, it's time"
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", description = description, intents=intents, case_insensitive = True)
 
@@ -61,7 +61,6 @@ async def on_ready():
             exc = '{}: {}'.format(type(e).__name__, e)
             print('Failed to load extension {}\n{}'.format(extension, exc))
 
-    await bot.tree.sync()
     print("Synced slash commands for all users.")
 
 bot.run(environment.TOKEN)

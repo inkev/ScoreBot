@@ -15,7 +15,7 @@ class Valo(commands.Cog):
     
 
     @commands.hybrid_command()
-    async def drink(self, ctx, name: str):
+    async def valodrink(self, ctx, name: str):
         name = name.lower()
         player = player_dic[name]
         
