@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import valo_api
 import environment
+import sqlite3
 
 HISTORY_VERSION = "v3"
 REGION = "na"
